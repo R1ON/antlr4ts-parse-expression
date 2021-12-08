@@ -1,13 +1,14 @@
 {
-  "name": "simple-antlr-typescript-calculator",
+  "name": "antlr4ts-parse-expression",
   "keywords": [
     "typescript",
     "javascript",
-    "simple calculator",
     "antlr",
     "antlr4",
-    "antlr4ts"
+    "antlr4ts",
+    "react"
   ],
+  "description": "ANTLR4 with typescript and react",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
