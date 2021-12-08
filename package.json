@@ -1,0 +1,46 @@
+{
+  "name": "simple-antlr-typescript-calculator",
+  "keywords": [
+    "typescript",
+    "javascript",
+    "simple calculator",
+    "antlr",
+    "antlr4",
+    "antlr4ts"
+  ],
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@types/node": "^12.0.0",
+    "@types/react": "^17.0.0",
+    "@types/react-dom": "^17.0.0",
+    "antlr4ts": "^0.5.0-alpha.4",
+    "antlr4ts-cli": "^0.5.0-alpha.4",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-scripts": "4.0.3",
+    "typescript": "^4.1.2"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "antlr": "antlr4ts ./src/ANTLR/NameStringExpressionGrammar.g4 -visitor -no-listener -Xexact-output-dir -o ./src/ANTLR/src"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
