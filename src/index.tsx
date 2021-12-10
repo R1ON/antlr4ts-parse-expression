@@ -1,14 +1,14 @@
 import React, { FC } from 'react';
 import ReactDOM from 'react-dom';
-import parseNameStringExpression from './ANTLR/parser';
+import { NameStringParser } from './ANTLR/NameStringParser';
 
 const App: FC = () => {
-  const str = ` [1,2,3,[4,5]] `;
+  const str = `спартак забьет {5.5+ 3} голов`;
 
   let result;
   
   try {
-    result = parseNameStringExpression(str);
+    result = NameStringParser.Parse(str).format();
   }
   catch (err) {
     console.log('err', err);
@@ -17,11 +17,11 @@ const App: FC = () => {
     )
   }
 
-  console.log('result', result);
-  console.log('result.evaluateValue', result.evaluateValue());
+  console.log(result);
+  // console.log('result.evaluateValue', result.evaluateValue());
 
   return (
-    <div>обычный див</div>
+    <div>{result}</div>
   );
 };
 

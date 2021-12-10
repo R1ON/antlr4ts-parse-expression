@@ -1,12 +1,13 @@
 import { AbstractParseTreeVisitor } from 'antlr4ts/tree/AbstractParseTreeVisitor';
 
-import { NameStringExpressionGrammarVisitor } from './src/NameStringExpressionGrammarVisitor';
+import { NameStringExpressionGrammarVisitor } from '../src/NameStringExpressionGrammarVisitor';
 import {
   CompilationUnitContext,
   UnaryMinusContext,
   NumberContext,
   StringContext,
   ArrayContext,
+  FunctionCallContext,
   AddSubExpressionContext,
   MulDivExpressionContext,
   ParenExpressionContext,
@@ -14,19 +15,20 @@ import {
   BinaryExpressionContext,
   NegateExpressionContext,
   NameStringExpressionGrammarParser,
-} from './src/NameStringExpressionGrammarParser';
+} from '../src/NameStringExpressionGrammarParser';
 
-import { NameStringExpression } from './expressions/NameStringExpression';
-import { ConstantExpression } from './expressions/ConstantExpression';
-import { AddExpression } from './expressions/AddExpression';
-import { SubExpression } from './expressions/SubExpression';
-import { MultiplyExpression } from './expressions/MultiplyExpression';
-import { DivideExpression } from './expressions/DivideExpression';
-import { ModuloExpression } from './expressions/ModuloExpression';
-import { UnaryMinusExpression } from './expressions/UnaryMinusExpression';
-import { ComparatorExpression } from './expressions/ComparatorExpression';
-import { NegateExpression } from './expressions/NegateExpression';
-import { ArrayExpression } from './expressions/ArrayExpression';
+import { NameStringExpression } from '../expressions/NameStringExpression';
+import { ConstantExpression } from '../expressions/ConstantExpression';
+import { AddExpression } from '../expressions/AddExpression';
+import { SubExpression } from '../expressions/SubExpression';
+import { MultiplyExpression } from '../expressions/MultiplyExpression';
+import { DivideExpression } from '../expressions/DivideExpression';
+import { ModuloExpression } from '../expressions/ModuloExpression';
+import { UnaryMinusExpression } from '../expressions/UnaryMinusExpression';
+import { ComparatorExpression } from '../expressions/ComparatorExpression';
+import { NegateExpression } from '../expressions/NegateExpression';
+import { ArrayExpression } from '../expressions/ArrayExpression';
+import { FunctionCallExpression } from '../expressions/FunctionCallExpression';
 
 // ---
 
@@ -68,6 +70,26 @@ export class NameStringExpressionVisitor extends AbstractParseTreeVisitor<NameSt
     }
 
     return new ArrayExpression(values);
+  }
+  
+  // visitParameterReference(ctx: ParameterReferenceContext) {
+  //   console.log('ctx', ctx);
+  //   return new NameStringExpression();
+  // }
+
+  visitFunctionCall(ctx: FunctionCallContext) {
+    const values = [];
+    const argumentContexts = ctx._args?.expression();
+
+    if (argumentContexts && argumentContexts.length > 0) {
+      argumentContexts?.forEach((expression) => {
+        values.push(this.visit(expression));
+      });
+    }
+    
+    const name = ctx._name.text;
+
+    return new FunctionCallExpression(name, values);
   }
 
   visitAddSubExpression(ctx: AddSubExpressionContext) {

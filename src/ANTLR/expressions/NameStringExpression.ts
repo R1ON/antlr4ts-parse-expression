@@ -1,4 +1,4 @@
-type EvaluateStringReturnType = string | null;
+type EvaluateStringReturnType = string | null | void;
 
 type EvaluateValue = string | number | null;
 type EvaluateValueReturnType = EvaluateValue | EvaluateValue[];

@@ -10,7 +10,7 @@ export class ArrayExpression extends NameStringExpression {
   }
 
   public evaluateString() {
-    return this.evaluateValue().toString();
+    throw new Error('ArrayExpression -> нельяза преобразовать массив к строке.');
   }
 
   public evaluateValue() {
