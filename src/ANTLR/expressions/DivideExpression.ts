@@ -1,4 +1,7 @@
 import { NameStringExpression } from './NameStringExpression';
+import { EvaluateStringExp, EvaluateValueExp } from '../types';
+
+// ---
 
 export class DivideExpression extends NameStringExpression {
   public left: NameStringExpression;
@@ -11,13 +14,13 @@ export class DivideExpression extends NameStringExpression {
     this.right = right;
   }
 
-  public evaluateString() {
-    return this.evaluateValue().toString();
-  }
+  public evaluateString: EvaluateStringExp = (formatterContext, parameters) => {
+    return this.evaluateValue(formatterContext, parameters).toString();
+  };
 
-  public evaluateValue() {
-    const left = this.left.evaluateValue();
-    const right = this.right.evaluateValue();
+  public evaluateValue: EvaluateValueExp = (formatterContext, parameters) => {
+    const left = this.left.evaluateValue(formatterContext, parameters);
+    const right = this.right.evaluateValue(formatterContext, parameters);
 
     if (typeof left === 'number' && typeof right === 'number') {
       return left / right;
@@ -54,5 +57,5 @@ export class DivideExpression extends NameStringExpression {
       Left = ${left}.
       Right = ${right}.
     `);
-  }
+  };
 }

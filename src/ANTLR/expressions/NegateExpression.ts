@@ -1,4 +1,7 @@
 import { NameStringExpression } from './NameStringExpression';
+import { EvaluateStringExp, EvaluateValueExp } from '../types';
+
+// ---
 
 export class NegateExpression extends NameStringExpression {
   public expression: NameStringExpression;
@@ -9,12 +12,12 @@ export class NegateExpression extends NameStringExpression {
     this.expression = expression;
   }
 
-  public evaluateString() {
-    return this.evaluateValue().toString();
-  }
+  public evaluateString: EvaluateStringExp = (formatterContext, parameters) => {
+    return this.evaluateValue(formatterContext, parameters).toString();
+  };
 
-  public evaluateValue() {
-    const expression = this.expression.evaluateValue();
+  public evaluateValue: EvaluateValueExp = (formatterContext, parameters) => {
+    const expression = this.expression.evaluateValue(formatterContext, parameters);
 
     if (typeof expression !== 'number') {
       throw new Error(`
@@ -37,5 +40,5 @@ export class NegateExpression extends NameStringExpression {
           Expression = ${expression}.
         `);
     }
-  }
+  };
 }

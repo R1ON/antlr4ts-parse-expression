@@ -1,4 +1,7 @@
 import { NameStringExpression } from './NameStringExpression';
+import { EvaluateStringExp, EvaluateValueExp } from '../types';
+
+// ---
 
 export class ConstantExpression extends NameStringExpression {
   public value: number | string = 0;
@@ -17,13 +20,13 @@ export class ConstantExpression extends NameStringExpression {
     this.value = value;
   }
 
-  public evaluateString() {
+  public evaluateString: EvaluateStringExp = () => {
     return typeof this.value === 'string'
       ? this.value
       : this.value.toString(10);
-  }
+  };
 
-  public evaluateValue() {
+  public evaluateValue: EvaluateValueExp = () => {
     return this.value;
-  }
+  };
 }

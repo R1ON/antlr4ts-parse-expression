@@ -1,17 +1,21 @@
 import { CharStreams, CommonTokenStream } from 'antlr4ts';
 
-import { NameStringExpression } from '../expressions/NameStringExpression';
-import { NameStringExpressionGrammarLexer } from '../src/NameStringExpressionGrammarLexer';
-import { NameStringExpressionGrammarParser } from '../src/NameStringExpressionGrammarParser';
+import { FunctionWithContext } from '../types';
 
 import { NameStringExpressionVisitor } from './Visitor';
 
+import { NameStringExpressionGrammarLexer } from '../src/NameStringExpressionGrammarLexer';
+import { NameStringExpressionGrammarParser } from '../src/NameStringExpressionGrammarParser';
+
+import { NameStringExpression } from '../expressions/NameStringExpression';
+import { NamesFormatterContext } from '../formatters/NamesFormatterContext';
+
 // ---
 
-type WriteToReturnType = string;
+type WriteTo = FunctionWithContext<string>;
 
 interface NameStringExpressionProps {
-  writeTo: () => WriteToReturnType;
+  writeTo: WriteTo;
 }
 
 // ---
@@ -19,9 +23,9 @@ interface NameStringExpressionProps {
 export class StringChunk implements NameStringExpressionProps {
   constructor() {}
 
-  public writeTo(): WriteToReturnType {
+  public writeTo: WriteTo = () => {
     return '';
-  }
+  };
 }
 
 export class RegularString extends StringChunk {
@@ -33,9 +37,9 @@ export class RegularString extends StringChunk {
     this.value = value;
   }
 
-  public writeTo(): WriteToReturnType {
+  public writeTo: WriteTo = () => {
     return this.value;
-  }
+  };
 }
 
 export class ExpressionString extends StringChunk {
@@ -58,9 +62,12 @@ export class ExpressionString extends StringChunk {
     this.Expression = visitor.visit(tree);
   }
 
-  public writeTo(): WriteToReturnType {
+  public writeTo: WriteTo = (
+    formatterContext,
+    parameters
+  ) => {
     try {
-      const result = this.Expression.evaluateString();
+      const result = this.Expression.evaluateString(formatterContext, parameters);
 
       if (typeof result !== 'string') {
         console.warn(`
@@ -82,7 +89,7 @@ export class ExpressionString extends StringChunk {
     }
 
     return '';
-  }
+  };
 
   private static isNullOrWhitespace(input: string | null | undefined): boolean {
     return !input || !input.trim();
@@ -100,26 +107,24 @@ export class ParensString extends StringChunk {
     this.innerChunks = nameString;
   }
 
-  public writeTo(): WriteToReturnType {
+  public writeTo: WriteTo = (
+    formatterContext,
+    parameters,
+  ) => {
     let innerString = `${this.leadingSpace}(`;
     
     for (const chunk of this.innerChunks) {
-      if (chunk instanceof ExpressionString) {
-        const result = chunk.writeTo();
+      const result = chunk.writeTo(formatterContext, parameters);
 
-        if (result === '') {
-          return '';
-        }
+      if (chunk instanceof ExpressionString && result === '') {
+        return '';
+      }
 
-        innerString += result;
-      }
-      else {
-        innerString += chunk.writeTo();
-      }
+      innerString += result;
     }
 
     innerString += ')';
     
     return innerString;
-  }
+  };
 }

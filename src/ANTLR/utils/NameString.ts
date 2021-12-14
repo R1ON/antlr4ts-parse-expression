@@ -1,4 +1,5 @@
 import { StringChunk } from './StringChunk';
+import { FunctionWithContext } from '../types';
 
 export class NameString {
   private readonly _chunks: StringChunk[] = [];
@@ -7,13 +8,16 @@ export class NameString {
     this._chunks = chunks;
   }
 
-  public format() {
+  public format: FunctionWithContext<void> = (
+    formatterContext,
+    parameters,
+  ) => {
     let finalValue = '';
 
     this._chunks.forEach((chunk) => {
-      finalValue += chunk.writeTo();
+      finalValue += chunk.writeTo(formatterContext, parameters);
     });
 
     return finalValue;
-  }
+  };
 }

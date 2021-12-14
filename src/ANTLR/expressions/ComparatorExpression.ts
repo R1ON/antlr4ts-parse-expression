@@ -1,4 +1,7 @@
 import { NameStringExpression } from './NameStringExpression';
+import { EvaluateStringExp, EvaluateValueExp } from '../types';
+
+// ---
 
 type Operation = '==' | '>=' | '>' | '<=' | '<' | '!=' | '&&' | '||';
 
@@ -16,13 +19,13 @@ export class ComparatorExpression extends NameStringExpression {
     this.operation = op;
   }
 
-  public evaluateString() {
-    return this.evaluateValue().toString();
-  }
+  public evaluateString: EvaluateStringExp = (formatterContext, parameters) => {
+    return this.evaluateValue(formatterContext, parameters).toString();
+  };
 
-  public evaluateValue() {
-    const left = this.left.evaluateValue();
-    const right = this.right.evaluateValue();
+  public evaluateValue: EvaluateValueExp = (formatterContext, parameters) => {
+    const left = this.left.evaluateValue(formatterContext, parameters);
+    const right = this.right.evaluateValue(formatterContext, parameters);
 
     if (
       (typeof left === 'string' && typeof right !== 'string') ||
@@ -47,7 +50,7 @@ export class ComparatorExpression extends NameStringExpression {
     return typeof left === 'string'
       ? this.compareStrings(left, right)
       : this.compareNumbers(left, right);
-  }
+  };
 
   private compareStrings(left, right) {
     switch (this.operation) {

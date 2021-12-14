@@ -1,4 +1,7 @@
 import { NameStringExpression } from './NameStringExpression';
+import { EvaluateStringExp, EvaluateValueExp } from '../types';
+
+// ---
 
 export class UnaryMinusExpression extends NameStringExpression {
   public innerExpression: NameStringExpression;
@@ -9,12 +12,12 @@ export class UnaryMinusExpression extends NameStringExpression {
     this.innerExpression = innerExpression;
   }
 
-  public evaluateString() {
-    return this.evaluateValue().toString();
-  }
+  public evaluateString: EvaluateStringExp = (formatterContext, parameters) => {
+    return this.evaluateValue(formatterContext, parameters).toString();
+  };
 
-  public evaluateValue() {
-    const argumentValue = this.innerExpression.evaluateValue();
+  public evaluateValue: EvaluateValueExp = (formatterContext, parameters) => {
+    const argumentValue = this.innerExpression.evaluateValue(formatterContext, parameters);
 
     if (typeof argumentValue === 'number') {
       return -argumentValue;
@@ -39,5 +42,5 @@ export class UnaryMinusExpression extends NameStringExpression {
       ArgumentValue = ${argumentValue}.
       Typeof ArgumentValue = ${typeof argumentValue}.
     `);
-  }
+  };
 }

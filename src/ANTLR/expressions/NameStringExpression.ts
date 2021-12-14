@@ -1,21 +1,18 @@
-type EvaluateStringReturnType = string | null | void;
+import { EvaluateStringExp, EvaluateValueExp } from '../types';
 
-type EvaluateValue = string | number | null;
-type EvaluateValueReturnType = EvaluateValue | EvaluateValue[];
+// ---
 
 interface NameStringExpressionProps {
-  evaluateString: () => EvaluateStringReturnType;
-  evaluateValue: () => EvaluateValueReturnType;
+  evaluateString: EvaluateStringExp;
+  evaluateValue: EvaluateValueExp;
 }
 
 export class NameStringExpression implements NameStringExpressionProps {
-  constructor() {}
-
-  public evaluateString(): EvaluateStringReturnType {
+  public evaluateString: EvaluateStringExp = () => {
     return null;
-  }
+  };
 
-  public evaluateValue(): EvaluateValueReturnType {
+  public evaluateValue: EvaluateValueExp = () => {
     return null;
-  }
+  };
 }

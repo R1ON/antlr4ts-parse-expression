@@ -1,4 +1,7 @@
 import { NameStringExpression } from './NameStringExpression';
+import { EvaluateStringExp, EvaluateValueExp } from '../types';
+
+// ---
 
 export class ArrayExpression extends NameStringExpression {
   public values: NameStringExpression[];
@@ -9,11 +12,13 @@ export class ArrayExpression extends NameStringExpression {
     this.values = values;
   }
 
-  public evaluateString() {
+  public evaluateString: EvaluateStringExp = () => {
     throw new Error('ArrayExpression -> нельяза преобразовать массив к строке.');
-  }
+  };
 
-  public evaluateValue() {
-    return this.values.map((value) => value.evaluateValue()).flat();
-  }
+  public evaluateValue: EvaluateValueExp = (formatterContext, parameters) => {
+    return this.values.map((value) => (
+      value.evaluateValue(formatterContext, parameters)
+    )).flat();
+  };
 }

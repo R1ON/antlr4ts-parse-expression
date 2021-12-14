@@ -1,4 +1,7 @@
 import { NameStringExpression } from './NameStringExpression';
+import { EvaluateStringExp, EvaluateValueExp } from '../types';
+
+// ---
 
 export class FunctionCallExpression extends NameStringExpression {
   public functionName: string;
@@ -11,19 +14,17 @@ export class FunctionCallExpression extends NameStringExpression {
     this.params = params;
   }
 
-  public evaluateString() {
-    // TODO: тут нужно достать функцию из контекста, если она есть, то вызвать, если нет, то выкинуть ошибку
-    // return this.evaluateValue().toString();
-    return null;
-  }
+  public evaluateString: EvaluateStringExp = (formatterContext, parameters) => {
+    const func = formatterContext.tryGetFunction(this.functionName);
 
-  public evaluateValue() {
-    return this.evaluateString();
+    if (!func) {
+      throw new Error(`FunctionCallExpression -> функция ${this.functionName} не найдена.`);
+    }
 
-    // throw new Error(`
-    //   AddExpression -> 'right' или 'left' не являются числом или строкой.
-    //   Left = ${left}.
-    //   Right = ${right}.
-    // `);
-  }
+    return func(this.params, formatterContext);
+  };
+
+  public evaluateValue: EvaluateValueExp = (formatterContext, parameters) => {
+    return this.evaluateString(formatterContext, parameters);
+  };
 }

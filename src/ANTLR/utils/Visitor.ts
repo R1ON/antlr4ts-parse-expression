@@ -8,6 +8,8 @@ import {
   StringContext,
   ArrayContext,
   FunctionCallContext,
+  EntityContext,
+  ParameterReferenceContext,
   AddSubExpressionContext,
   MulDivExpressionContext,
   ParenExpressionContext,
@@ -29,6 +31,8 @@ import { ComparatorExpression } from '../expressions/ComparatorExpression';
 import { NegateExpression } from '../expressions/NegateExpression';
 import { ArrayExpression } from '../expressions/ArrayExpression';
 import { FunctionCallExpression } from '../expressions/FunctionCallExpression';
+import { EntityReferenceExpression } from '../expressions/EntityReferenceExpression';
+import { ParameterReferenceExpression } from '../expressions/ParameterReferenceExpression';
 
 // ---
 
@@ -71,11 +75,6 @@ export class NameStringExpressionVisitor extends AbstractParseTreeVisitor<NameSt
 
     return new ArrayExpression(values);
   }
-  
-  // visitParameterReference(ctx: ParameterReferenceContext) {
-  //   console.log('ctx', ctx);
-  //   return new NameStringExpression();
-  // }
 
   visitFunctionCall(ctx: FunctionCallContext) {
     const values = [];
@@ -90,6 +89,26 @@ export class NameStringExpressionVisitor extends AbstractParseTreeVisitor<NameSt
     const name = ctx._name.text;
 
     return new FunctionCallExpression(name, values);
+  }
+  
+  visitEntity(ctx: EntityContext) {
+    const name = ctx._name.text;
+    const entityKeyContext = ctx.valueArgument();
+
+    let keyArgument: NameStringExpression | null = null;
+
+    if (entityKeyContext !== null) {
+      keyArgument = this.visit(entityKeyContext)
+    }
+
+    const path = ctx.propertyPath().IDENTIFIER()
+      .map((path) => path.text);
+    
+    return new EntityReferenceExpression(name, keyArgument, path);
+  }
+  
+  visitParameterReference(ctx: ParameterReferenceContext) {
+    return new ParameterReferenceExpression(ctx._name.text);
   }
 
   visitAddSubExpression(ctx: AddSubExpressionContext) {
