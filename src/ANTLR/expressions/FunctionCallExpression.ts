@@ -21,7 +21,7 @@ export class FunctionCallExpression extends NameStringExpression {
       throw new Error(`FunctionCallExpression -> функция ${this.functionName} не найдена.`);
     }
 
-    return func(this.params, formatterContext);
+    return func(this.params, formatterContext, parameters);
   };
 
   public evaluateValue: EvaluateValueExp = (formatterContext, parameters) => {

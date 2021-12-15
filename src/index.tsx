@@ -166,16 +166,16 @@ const MATCH = {
   };
 
 const App: FC = () => {
-  const str = ` {Object[1].name} `;
+  const str = `{Object[1].Name} забьет {decode($period == 1, 'в', 'во')} {$period} тайме`;
 
   let result;
   
   try {
     const formatterContext = new MatchNamesFormatterContext();
-    formatterContext.addObjects(MATCH.objects['1']);
-    formatterContext.addObjects(MATCH.objects['2']);
+    formatterContext.addObjects(MATCH.objects);
 
     const parameters = {
+      period: 2,
       points: -1.5,
       pointType: 100.0,
       feedType: 100.0,
