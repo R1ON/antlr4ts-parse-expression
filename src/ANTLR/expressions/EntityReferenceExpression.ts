@@ -77,7 +77,7 @@ export class EntityReferenceExpression extends NameStringExpression {
       entity = entities.get(stringKey);
     }
     
-    return entity.tryGetProperty(formatterContext, this.path);
+    return entity.tryGetProperty(this.path);
   };
 
   public evaluateValue: EvaluateValueExp = (formatterContext, parameters) => {

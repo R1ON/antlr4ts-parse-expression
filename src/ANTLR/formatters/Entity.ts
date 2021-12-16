@@ -1,4 +1,3 @@
-import { NamesFormatterContext } from './NamesFormatterContext';
 import { CaseInsensitiveMap } from '../utils/CaseInsensitiveMap';
 
 // ---
@@ -12,7 +11,7 @@ export class Entity {
     this.properties = new CaseInsensitiveMap(Object.entries(properties));
   }
 
-  public tryGetProperty(formatterContext: NamesFormatterContext, path: string[]): string | null {
+  public tryGetProperty(path: string[]): string | null {
     const value = this.tryGetPathValue(path);
 
     if (value === null || value === undefined) {

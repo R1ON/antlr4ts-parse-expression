@@ -8,7 +8,6 @@ import { NameStringExpressionGrammarLexer } from '../src/NameStringExpressionGra
 import { NameStringExpressionGrammarParser } from '../src/NameStringExpressionGrammarParser';
 
 import { NameStringExpression } from '../expressions/NameStringExpression';
-import { NamesFormatterContext } from '../formatters/NamesFormatterContext';
 
 // ---
 
