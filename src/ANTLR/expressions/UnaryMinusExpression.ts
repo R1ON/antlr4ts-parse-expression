@@ -1,5 +1,6 @@
 import { NameStringExpression } from './NameStringExpression';
 import { EvaluateStringExp, EvaluateValueExp } from '../types';
+import { ANTLRError } from '../utils/Error';
 
 // ---
 
@@ -27,20 +28,18 @@ export class UnaryMinusExpression extends NameStringExpression {
       const floatArgument = parseFloat(argumentValue);
 
       if (Number.isNaN(floatArgument)) {
-        throw new Error(`
-          UnaryMinusExpression -> не получилось конвертировать 'argumentValue' в число. 
-          ArgumentValue = ${argumentValue}.
-          Typeof ArgumentValue = ${typeof argumentValue}.
-        `);
+        throw ANTLRError.getErrorMessage(
+          'UnaryMinusExpression -> не получилось конвертировать "argumentValue" в число.',
+          { argumentValue, argumentValueTypeof: typeof argumentValue },
+        );
       }
 
       return -floatArgument;
     }
 
-    throw new Error(`
-      UnaryMinusExpression -> 'argumentValue' должен быть строкой или числом
-      ArgumentValue = ${argumentValue}.
-      Typeof ArgumentValue = ${typeof argumentValue}.
-    `);
+    throw ANTLRError.getErrorMessage(
+      'UnaryMinusExpression -> "argumentValue" должен быть строкой или числом',
+      { argumentValue, argumentValueTypeof: typeof argumentValue },
+    );
   };
 }

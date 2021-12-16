@@ -1,5 +1,6 @@
 import { NameStringExpression } from './NameStringExpression';
 import { EvaluateStringExp, EvaluateValueExp } from '../types';
+import { ANTLRError } from '../utils/Error';
 
 // ---
 
@@ -10,11 +11,10 @@ export class ConstantExpression extends NameStringExpression {
     super();
 
     if (value === undefined || value === null) {
-      throw new Error(`
-        ConstantExpression -> 'value' должно быть строкой или числом.
-        Value = ${value}.
-        Typeof value = ${typeof value}.
-      `);
+      throw ANTLRError.getErrorMessage(
+        'ConstantExpression -> "value" должно быть строкой или числом',
+        { value, valueTypeof: typeof value },
+      );
     }
 
     this.value = value;

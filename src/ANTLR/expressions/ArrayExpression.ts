@@ -1,5 +1,6 @@
 import { NameStringExpression } from './NameStringExpression';
 import { EvaluateStringExp, EvaluateValueExp } from '../types';
+import { ANTLRError } from '../utils/Error';
 
 // ---
 
@@ -13,7 +14,7 @@ export class ArrayExpression extends NameStringExpression {
   }
 
   public evaluateString: EvaluateStringExp = () => {
-    throw new Error('ArrayExpression -> нельяза преобразовать массив к строке.');
+    throw ANTLRError.getErrorMessage('ArrayExpression -> нельяза преобразовать массив к строке');
   };
 
   public evaluateValue: EvaluateValueExp = (formatterContext, parameters) => {

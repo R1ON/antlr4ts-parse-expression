@@ -1,5 +1,6 @@
 import { NameStringExpression } from './NameStringExpression';
 import { EvaluateStringExp, EvaluateValueExp } from '../types';
+import { ANTLRError } from '../utils/Error';
 
 // ---
 
@@ -34,10 +35,9 @@ export class AddExpression extends NameStringExpression {
       return left.toString() + right;
     }
 
-    throw new Error(`
-      AddExpression -> 'right' или 'left' не являются числом или строкой.
-      Left = ${left}.
-      Right = ${right}.
-    `);
+    throw ANTLRError.getErrorMessage(
+      'AddExpression -> "right" или "left" не являются числом или строкой',
+      { left, right },
+    );
   };
 }

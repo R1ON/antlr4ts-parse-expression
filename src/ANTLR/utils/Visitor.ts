@@ -1,5 +1,7 @@
 import { AbstractParseTreeVisitor } from 'antlr4ts/tree/AbstractParseTreeVisitor';
 
+import { ANTLRError } from './Error';
+
 import { NameStringExpressionGrammarVisitor } from '../src/NameStringExpressionGrammarVisitor';
 import {
   CompilationUnitContext,
@@ -123,10 +125,10 @@ export class NameStringExpressionVisitor extends AbstractParseTreeVisitor<NameSt
         return new SubExpression(left, right);
 
       default:
-        throw new Error(`
-          NameStringExpressionVisitor -> visitAddSubExpression -> операция не является сложением или вычитанием.
-          Operation = ${ctx._op.text}.
-        `);
+        throw ANTLRError.getErrorMessage(
+          'NameStringExpressionVisitor -> visitAddSubExpression -> операция не является сложением или вычитанием.',
+          { operation: ctx._op.text, operationType: ctx._op.type },
+        );
     }
   }
 
@@ -145,10 +147,10 @@ export class NameStringExpressionVisitor extends AbstractParseTreeVisitor<NameSt
         return new ModuloExpression(left, right);
 
       default:
-        throw new Error(`
-          NameStringExpressionVisitor -> visitMulDivExpression -> операция не является умножением или делением.
-          Operation = ${ctx._op.text}.
-        `);
+        throw ANTLRError.getErrorMessage(
+          'NameStringExpressionVisitor -> visitMulDivExpression -> операция не является умножением или делением.',
+          { operation: ctx._op.text, operationType: ctx._op.type },
+        );
     }
   }
   
@@ -180,10 +182,10 @@ export class NameStringExpressionVisitor extends AbstractParseTreeVisitor<NameSt
         return new ComparatorExpression(left, right, '!=');
 
       default:
-        throw new Error(`
-          NameStringExpressionVisitor -> visitComparatorExpression -> неизвестная операция.
-          Operation = ${ctx._op.text}.
-        `);
+        throw ANTLRError.getErrorMessage(
+          'NameStringExpressionVisitor -> visitComparatorExpression -> неизвестная операция',
+          { operation: ctx._op.text, operationType: ctx._op.type },
+        );
     }
   }
 
@@ -199,10 +201,10 @@ export class NameStringExpressionVisitor extends AbstractParseTreeVisitor<NameSt
         return new ComparatorExpression(left, right, '||');
 
       default:
-        throw new Error(`
-          NameStringExpressionVisitor -> visitBinaryExpression -> неизвестная операция.
-          Operation = ${ctx._op.text}.
-        `);
+        throw ANTLRError.getErrorMessage(
+          'NameStringExpressionVisitor -> visitBinaryExpression -> неизвестная операция',
+          { operation: ctx._op.text, operationType: ctx._op.type },
+        );
     }
   }
 

@@ -1,5 +1,6 @@
 import { StringChunk, RegularString, ExpressionString, ParensString } from './utils/StringChunk';
 import { NameString } from './utils/NameString';
+import { ANTLRError } from './utils/Error';
 
 export class NameStringParser {
   public static Parse(nameString: string) {
@@ -39,10 +40,10 @@ export class NameStringParser {
 
       if (char === '}') {
         if (!inExpression) {
-          throw new Error(`
-            NameStringParser -> была найден символ '}', но не найден '{'.
-            Position = ${position}.
-          `);
+          throw ANTLRError.getErrorMessage(
+            'NameStringParser -> была найден символ "}", но не найден "{"',
+            { position },
+          );
         }
 
         exitExpression();
@@ -53,19 +54,19 @@ export class NameStringParser {
     }
 
     if (inExpression) {
-      throw new Error(`
-        NameStringParser -> выражение не закрыто.
-        Expression Start Position = ${expressionStartPosition}.
-      `);
+      throw ANTLRError.getErrorMessage(
+        'NameStringParser -> выражение не закрыто',
+        { expressionStartPosition },
+      );
     }
 
     if (stack.length > 0) {
       const errorPosition = currentContext.startPosition;
 
-      throw new Error(`
-        NameStringParser -> выражение не закрыто.
-        Error Position = ${errorPosition}.
-      `);
+      throw ANTLRError.getErrorMessage(
+        'NameStringParser -> выражение не закрыто',
+        { errorPosition },
+      );
     }
 
     putString(false);
@@ -113,7 +114,7 @@ export class NameStringParser {
 
     function exitParens() {
       if (stack.length === 0) {
-        throw new Error(`NameStringParser -> не найден символ '('.`);
+        throw ANTLRError.getErrorMessage('NameStringParser -> не найден символ "("');
       }
 
       position++;

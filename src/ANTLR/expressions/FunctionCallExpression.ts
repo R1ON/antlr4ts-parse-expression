@@ -1,5 +1,6 @@
 import { NameStringExpression } from './NameStringExpression';
 import { EvaluateStringExp, EvaluateValueExp } from '../types';
+import { ANTLRError } from '../utils/Error';
 
 // ---
 
@@ -18,7 +19,10 @@ export class FunctionCallExpression extends NameStringExpression {
     const func = formatterContext.tryGetFunction(this.functionName);
 
     if (!func) {
-      throw new Error(`FunctionCallExpression -> функция ${this.functionName} не найдена.`);
+      throw ANTLRError.getErrorMessage(
+        'FunctionCallExpression -> функция не найдена',
+        { functionName: this.functionName },
+      );
     }
 
     return func(this.params, formatterContext, parameters);

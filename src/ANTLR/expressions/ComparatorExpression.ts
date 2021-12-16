@@ -1,5 +1,6 @@
 import { NameStringExpression } from './NameStringExpression';
 import { EvaluateStringExp, EvaluateValueExp } from '../types';
+import { ANTLRError } from '../utils/Error';
 
 // ---
 
@@ -31,20 +32,19 @@ export class ComparatorExpression extends NameStringExpression {
       (typeof left === 'string' && typeof right !== 'string') ||
       (typeof left !== 'string' && typeof right === 'string')
     ) {
-      throw new Error(`
-        ComparatorExpression -> 'right' и 'left' должны быть одного типа.
-        Left = ${left}. Typeof left = ${typeof left}.
-        Right = ${right}. Typeof right = ${typeof right}.
-      `);
+      throw ANTLRError.getErrorMessage(
+        'ComparatorExpression -> "right" и "left" должны быть одного типа',
+        { left, leftTypeof: typeof left, right, rightTypeof: typeof right },
+      );
     }
 
     const isCorrectStringOperation = this.operation === '==' || this.operation === '!=';
 
     if (typeof left === 'string' && typeof right === 'string' && !isCorrectStringOperation) {
-      throw new Error(`
-        ComparatorExpression -> нельзя использовать оператор ${this.operation} для сравнения строк.
-        Замените строки на числа.
-      `);
+      throw ANTLRError.getErrorMessage(
+        'ComparatorExpression -> нельзя использовать operator для сравнения строк (замените строки на числа)',
+        { operator: this.operation },
+      );
     }
 
     return typeof left === 'string'
@@ -61,9 +61,10 @@ export class ComparatorExpression extends NameStringExpression {
         return left !== right ? 1 : 0;
 
       default:
-        throw new Error(`
-          ComparatorExpression -> compareStrings -> некорректный оператор ${this.operation} при сравнении ${left} и ${right}.
-        `);
+        throw ANTLRError.getErrorMessage(
+          `ComparatorExpression -> compareStrings -> некорректный "operator" при сравнении "left" и "right"`,
+          { left, right, operator: this.operation },
+        );
     }
   }
 
@@ -92,11 +93,10 @@ export class ComparatorExpression extends NameStringExpression {
       !(left === 0 || left === 1) ||
       !(right === 0 || right === 1)
     ) {
-      throw new Error(`
-        ComparatorExpression -> не получится применить операцию ${this.operation}.
-        Значения для 'left' и 'right' должны быть 0 или 1.
-        Текущие значения: left = ${left}; right = ${right};
-      `);
+      throw ANTLRError.getErrorMessage(
+        'ComparatorExpression -> не получится применить "operator". Значения для "left" и "right" должны быть 0 или 1',
+        { left, right, operator: this.operation },
+      );
     }
 
     const leftIsTrue  = left === 1;
@@ -110,9 +110,10 @@ export class ComparatorExpression extends NameStringExpression {
         return leftIsTrue || rightIsTrue ? 1 : 0;
 
       default:
-        throw new Error(`
-          ComparatorExpression -> compareNumbers -> некорректный оператор ${this.operation} при сравнении ${left} и ${right}.
-        `);
+        throw ANTLRError.getErrorMessage(
+          'ComparatorExpression -> compareNumbers -> некорректный "operator" для "left" и "right"',
+          { left, right, operator: this.operation },
+        );
     }
   }
 }

@@ -1,5 +1,6 @@
 import { NameStringExpression } from './NameStringExpression';
 import { EvaluateStringExp, EvaluateValueExp } from '../types';
+import { ANTLRError } from '../utils/Error';
 
 // ---
 
@@ -20,11 +21,10 @@ export class NegateExpression extends NameStringExpression {
     const expression = this.expression.evaluateValue(formatterContext, parameters);
 
     if (typeof expression !== 'number') {
-      throw new Error(`
-        NegateExpression -> не получится применить операцию Отрицание. Потому что 'expression' должен быть числом.
-        Expression = ${expression}.
-        Typeof expression = ${typeof expression}.
-      `);
+      throw ANTLRError.getErrorMessage(
+        'NegateExpression -> не получится применить операцию Отрицание ("expression" должен быть числом)',
+        { expression, expressionTypeof: typeof expression },
+      );
     }
 
     switch (expression) {
@@ -35,10 +35,10 @@ export class NegateExpression extends NameStringExpression {
         return 1;
 
       default:
-        throw new Error(`
-          NegateExpression -> 'expression' должен быть 1 или 0.
-          Expression = ${expression}.
-        `);
+        throw ANTLRError.getErrorMessage(
+          'NegateExpression -> "expression" должен быть 1 или 0',
+          { expression },
+        );
     }
   };
 }

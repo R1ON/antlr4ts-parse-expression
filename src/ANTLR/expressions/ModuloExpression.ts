@@ -1,5 +1,6 @@
 import { NameStringExpression } from './NameStringExpression';
 import { EvaluateStringExp, EvaluateValueExp } from '../types';
+import { ANTLRError } from '../utils/Error';
 
 // ---
 
@@ -30,10 +31,10 @@ export class ModuloExpression extends NameStringExpression {
       const floatRight = parseFloat(right);
 
       if (Number.isNaN(floatRight)) {
-        throw new Error(`
-          ModuloExpression -> 'right' не должен быть NaN.
-          Right = ${floatRight}.
-        `);
+        throw ANTLRError.getErrorMessage(
+          'ModuloExpression -> "right" не должен быть NaN',
+          { right: floatRight },
+        );
       }
 
       return left % floatRight;
@@ -43,19 +44,18 @@ export class ModuloExpression extends NameStringExpression {
       const floatLeft = parseFloat(left);
 
       if (Number.isNaN(floatLeft)) {
-        throw new Error(`
-          ModuloExpression -> 'left' не должен быть NaN.
-          Left = ${floatLeft}.
-        `);
+        throw ANTLRError.getErrorMessage(
+          'ModuloExpression -> "left" не должен быть NaN',
+          { left: floatLeft },
+        );
       }
 
       return floatLeft % right;
     }
 
-    throw new Error(`
-      ModuloExpression -> 'right' или 'left' не являются числом или строкой.
-      Left = ${left}.
-      Right = ${right}.
-    `);
+    throw ANTLRError.getErrorMessage(
+      'ModuloExpression -> "right" или "left" не являются числом или строкой',
+      { left, right },
+    );
   };
 }
