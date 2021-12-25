@@ -9,13 +9,14 @@ export class NameString {
   }
 
   public format: FunctionWithContext<void> = (
+    language,
     formatterContext,
     parameters,
   ) => {
     let finalValue = '';
 
     this._chunks.forEach((chunk) => {
-      finalValue += chunk.writeTo(formatterContext, parameters);
+      finalValue += chunk.writeTo(language, formatterContext, parameters);
     });
 
     return finalValue;

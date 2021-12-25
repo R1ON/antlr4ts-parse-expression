@@ -1,3 +1,4 @@
+import { I18Lang } from '../../locales';
 import { CaseInsensitiveMap } from '../utils/CaseInsensitiveMap';
 
 // ---
@@ -11,33 +12,44 @@ export class Entity {
     this.properties = new CaseInsensitiveMap(Object.entries(properties));
   }
 
-  public tryGetProperty(path: string[]): string | null {
-    const value = this.tryGetPathValue(path);
+  public tryGetProperty(path: string[], language: I18Lang): string | null {
+    let value = this.tryGetPathValue(path);
 
-    if (value === null || value === undefined) {
-      return null;
+    if (typeof value === 'object' && value !== null) {
+      if (value.hasOwnProperty(language)) {
+        value = value[language as keyof typeof value];
+      }
+      else {
+        return null;
+      }
     }
 
-    if (typeof value === 'object') {
-      return null;
-    }
+    switch (typeof value) {
+      case 'number':
+        return value.toString(10);
 
-    return value.toString();
+      case 'string':
+        return value;
+
+      default:
+        return null;
+    }
   }
 
-  private tryGetPathValue(path: string[]): Map | unknown {
+  private tryGetPathValue(path: string[]): unknown | null {
     let current: Map | unknown = this.properties;
-    let result = null;
 
     for (const name of path) {
       if (current instanceof CaseInsensitiveMap && current.has(name)) {
         current = current.get(name);
       }
       else {
-        return result;
+        return null;
       }
     }
 
-    return current;
+    return (current instanceof CaseInsensitiveMap)
+      ? null
+      : current;
   }
 }

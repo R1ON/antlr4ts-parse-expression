@@ -2,7 +2,7 @@ import { AbstractParseTreeVisitor } from 'antlr4ts/tree/AbstractParseTreeVisitor
 
 import { ANTLRError } from './Error';
 
-import { NameStringExpressionGrammarVisitor } from '../src/NameStringExpressionGrammarVisitor';
+import { NameStringExpressionGrammarVisitor } from '../bin/NameStringExpressionGrammarVisitor';
 import {
   CompilationUnitContext,
   UnaryMinusContext,
@@ -19,7 +19,7 @@ import {
   BinaryExpressionContext,
   NegateExpressionContext,
   NameStringExpressionGrammarParser,
-} from '../src/NameStringExpressionGrammarParser';
+} from '../bin/NameStringExpressionGrammarParser';
 
 import { NameStringExpression } from '../expressions/NameStringExpression';
 import { ConstantExpression } from '../expressions/ConstantExpression';
@@ -40,33 +40,36 @@ import { ParameterReferenceExpression } from '../expressions/ParameterReferenceE
 
 type VisitorProps = NameStringExpressionGrammarVisitor<NameStringExpression>;
 
-export class NameStringExpressionVisitor extends AbstractParseTreeVisitor<NameStringExpression> implements VisitorProps {
-  protected defaultResult() {
+export class NameStringExpressionVisitor
+  extends AbstractParseTreeVisitor<NameStringExpression>
+  implements VisitorProps {
+  // ---
+  protected defaultResult(): NameStringExpression {
     return new NameStringExpression();
   }
 
-  visitCompilationUnit(ctx: CompilationUnitContext) {
+  visitCompilationUnit(ctx: CompilationUnitContext): NameStringExpression {
     return this.visit(ctx.expression());
   }
 
-  visitUnaryMinus(ctx: UnaryMinusContext) {
+  visitUnaryMinus(ctx: UnaryMinusContext): NameStringExpression {
     const innerExpression = this.visit(ctx.valueArgument());
 
     return new UnaryMinusExpression(innerExpression);
   }
 
-  visitNumber(ctx: NumberContext) {
+  visitNumber(ctx: NumberContext): NameStringExpression {
     return new ConstantExpression(parseFloat(ctx.text));
   }
 
-  visitString(ctx: StringContext) {
+  visitString(ctx: StringContext): NameStringExpression {
     const text = ctx.text.substring(1, ctx.text.length - 1);
 
     return new ConstantExpression(text);
   }
-  
-  visitArray(ctx: ArrayContext) {
-    const values = [];
+
+  visitArray(ctx: ArrayContext): NameStringExpression {
+    const values: NameStringExpression[] = [];
     const expressions = ctx.expression();
 
     if (expressions && expressions.length > 0) {
@@ -78,8 +81,17 @@ export class NameStringExpressionVisitor extends AbstractParseTreeVisitor<NameSt
     return new ArrayExpression(values);
   }
 
-  visitFunctionCall(ctx: FunctionCallContext) {
-    const values = [];
+  visitFunctionCall(ctx: FunctionCallContext): NameStringExpression {
+    const name = ctx._name.text;
+
+    if (name === undefined) {
+      throw new ANTLRError(
+        'NameStringExpressionVisitor -> visitFunctionCall -> "name" не найден',
+        { name, context: ctx },
+      );
+    }
+
+    const values: NameStringExpression[] = [];
     const argumentContexts = ctx._args?.expression();
 
     if (argumentContexts && argumentContexts.length > 0) {
@@ -87,33 +99,48 @@ export class NameStringExpressionVisitor extends AbstractParseTreeVisitor<NameSt
         values.push(this.visit(expression));
       });
     }
-    
-    const name = ctx._name.text;
 
     return new FunctionCallExpression(name, values);
   }
-  
-  visitEntity(ctx: EntityContext) {
+
+  visitEntity(ctx: EntityContext): NameStringExpression {
     const name = ctx._name.text;
+
+    if (name === undefined) {
+      throw new ANTLRError(
+        'NameStringExpressionVisitor -> visitEntity -> "name" не найден',
+        { name, context: ctx },
+      );
+    }
+
     const entityKeyContext = ctx.valueArgument();
 
     let keyArgument: NameStringExpression | null = null;
 
-    if (entityKeyContext !== null) {
-      keyArgument = this.visit(entityKeyContext)
+    if (entityKeyContext !== undefined) {
+      keyArgument = this.visit(entityKeyContext);
     }
 
     const path = ctx.propertyPath().IDENTIFIER()
       .map((path) => path.text);
-    
+
     return new EntityReferenceExpression(name, keyArgument, path);
   }
-  
-  visitParameterReference(ctx: ParameterReferenceContext) {
-    return new ParameterReferenceExpression(ctx._name.text);
+
+  visitParameterReference(ctx: ParameterReferenceContext): NameStringExpression {
+    const name = ctx._name.text;
+
+    if (name === undefined) {
+      throw new ANTLRError(
+        'NameStringExpressionVisitor -> visitEntity -> "name" не найден',
+        { name, context: ctx },
+      );
+    }
+
+    return new ParameterReferenceExpression(name);
   }
 
-  visitAddSubExpression(ctx: AddSubExpressionContext) {
+  visitAddSubExpression(ctx: AddSubExpressionContext): NameStringExpression {
     const left = this.visit(ctx.getChild(0));
     const right = this.visit(ctx.getChild(ctx.childCount - 1));
 
@@ -125,14 +152,14 @@ export class NameStringExpressionVisitor extends AbstractParseTreeVisitor<NameSt
         return new SubExpression(left, right);
 
       default:
-        throw ANTLRError.getErrorMessage(
+        throw new ANTLRError(
           'NameStringExpressionVisitor -> visitAddSubExpression -> операция не является сложением или вычитанием.',
           { operation: ctx._op.text, operationType: ctx._op.type },
         );
     }
   }
 
-  visitMulDivExpression(ctx: MulDivExpressionContext) {
+  visitMulDivExpression(ctx: MulDivExpressionContext): NameStringExpression {
     const left = this.visit(ctx.getChild(0));
     const right = this.visit(ctx.getChild(ctx.childCount - 1));
 
@@ -147,18 +174,18 @@ export class NameStringExpressionVisitor extends AbstractParseTreeVisitor<NameSt
         return new ModuloExpression(left, right);
 
       default:
-        throw ANTLRError.getErrorMessage(
+        throw new ANTLRError(
           'NameStringExpressionVisitor -> visitMulDivExpression -> операция не является умножением или делением.',
           { operation: ctx._op.text, operationType: ctx._op.type },
         );
     }
   }
-  
-  visitParenExpression(ctx: ParenExpressionContext) {
+
+  visitParenExpression(ctx: ParenExpressionContext): NameStringExpression {
     return this.visit(ctx.expression());
   }
 
-  visitComparatorExpression(ctx: ComparatorExpressionContext) {
+  visitComparatorExpression(ctx: ComparatorExpressionContext): NameStringExpression {
     const left = this.visit(ctx.getChild(0));
     const right = this.visit(ctx.getChild(ctx.childCount - 1));
 
@@ -182,14 +209,14 @@ export class NameStringExpressionVisitor extends AbstractParseTreeVisitor<NameSt
         return new ComparatorExpression(left, right, '!=');
 
       default:
-        throw ANTLRError.getErrorMessage(
+        throw new ANTLRError(
           'NameStringExpressionVisitor -> visitComparatorExpression -> неизвестная операция',
           { operation: ctx._op.text, operationType: ctx._op.type },
         );
     }
   }
 
-  visitBinaryExpression(ctx: BinaryExpressionContext) {
+  visitBinaryExpression(ctx: BinaryExpressionContext): NameStringExpression {
     const left = this.visit(ctx.getChild(0));
     const right = this.visit(ctx.getChild(ctx.childCount - 1));
 
@@ -201,14 +228,14 @@ export class NameStringExpressionVisitor extends AbstractParseTreeVisitor<NameSt
         return new ComparatorExpression(left, right, '||');
 
       default:
-        throw ANTLRError.getErrorMessage(
+        throw new ANTLRError(
           'NameStringExpressionVisitor -> visitBinaryExpression -> неизвестная операция',
           { operation: ctx._op.text, operationType: ctx._op.type },
         );
     }
   }
 
-  visitNegateExpression(ctx: NegateExpressionContext) {
+  visitNegateExpression(ctx: NegateExpressionContext): NameStringExpression {
     const expression = this.visit(ctx.expression());
 
     return new NegateExpression(expression);

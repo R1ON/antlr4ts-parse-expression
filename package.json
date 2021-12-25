@@ -24,7 +24,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "antlr": "antlr4ts ./src/ANTLR/NameStringExpressionGrammar.g4 -visitor -no-listener -Xexact-output-dir -o ./src/ANTLR/src"
+    "antlr": "antlr4ts ./src/ANTLR/NameStringExpressionGrammar.g4 -visitor -no-listener -Xexact-output-dir -o ./src/ANTLR/bin"
   },
   "eslintConfig": {
     "extends": [

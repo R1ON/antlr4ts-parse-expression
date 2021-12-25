@@ -20,19 +20,21 @@ export class ComparatorExpression extends NameStringExpression {
     this.operation = op;
   }
 
-  public evaluateString: EvaluateStringExp = (formatterContext, parameters) => {
-    return this.evaluateValue(formatterContext, parameters).toString();
+  public evaluateString: EvaluateStringExp = (language, formatterContext, parameters) => {
+    const value = this.evaluateValue(language, formatterContext, parameters);
+
+    return this.convertEvaluatedValueToString(value);
   };
 
-  public evaluateValue: EvaluateValueExp = (formatterContext, parameters) => {
-    const left = this.left.evaluateValue(formatterContext, parameters);
-    const right = this.right.evaluateValue(formatterContext, parameters);
+  public evaluateValue: EvaluateValueExp = (language, formatterContext, parameters) => {
+    const left = this.left.evaluateValue(language, formatterContext, parameters);
+    const right = this.right.evaluateValue(language, formatterContext, parameters);
 
     if (
       (typeof left === 'string' && typeof right !== 'string') ||
       (typeof left !== 'string' && typeof right === 'string')
     ) {
-      throw ANTLRError.getErrorMessage(
+      throw new ANTLRError(
         'ComparatorExpression -> "right" и "left" должны быть одного типа',
         { left, leftTypeof: typeof left, right, rightTypeof: typeof right },
       );
@@ -41,18 +43,21 @@ export class ComparatorExpression extends NameStringExpression {
     const isCorrectStringOperation = this.operation === '==' || this.operation === '!=';
 
     if (typeof left === 'string' && typeof right === 'string' && !isCorrectStringOperation) {
-      throw ANTLRError.getErrorMessage(
+      throw new ANTLRError(
         'ComparatorExpression -> нельзя использовать operator для сравнения строк (замените строки на числа)',
         { operator: this.operation },
       );
     }
 
-    return typeof left === 'string'
-      ? this.compareStrings(left, right)
-      : this.compareNumbers(left, right);
+    // Проверка произведена выше, но .ts ее не видит
+    const isStrings = typeof left === 'string';
+
+    return isStrings
+      ? this.compareStrings(left as string, right as string)
+      : this.compareNumbers(left as number, right as number);
   };
 
-  private compareStrings(left, right) {
+  private compareStrings(left: string, right: string): number {
     switch (this.operation) {
       case '==':
         return left === right ? 1 : 0;
@@ -61,14 +66,14 @@ export class ComparatorExpression extends NameStringExpression {
         return left !== right ? 1 : 0;
 
       default:
-        throw ANTLRError.getErrorMessage(
-          `ComparatorExpression -> compareStrings -> некорректный "operator" при сравнении "left" и "right"`,
+        throw new ANTLRError(
+          'ComparatorExpression -> compareStrings -> некорректный "operator" при сравнении "left" и "right"',
           { left, right, operator: this.operation },
         );
     }
   }
 
-  private compareNumbers(left, right) {
+  private compareNumbers(left: number, right: number): number {
     switch (this.operation) {
       case '>':
         return left > right ? 1 : 0;
@@ -93,7 +98,7 @@ export class ComparatorExpression extends NameStringExpression {
       !(left === 0 || left === 1) ||
       !(right === 0 || right === 1)
     ) {
-      throw ANTLRError.getErrorMessage(
+      throw new ANTLRError(
         'ComparatorExpression -> не получится применить "operator". Значения для "left" и "right" должны быть 0 или 1',
         { left, right, operator: this.operation },
       );
@@ -110,7 +115,7 @@ export class ComparatorExpression extends NameStringExpression {
         return leftIsTrue || rightIsTrue ? 1 : 0;
 
       default:
-        throw ANTLRError.getErrorMessage(
+        throw new ANTLRError(
           'ComparatorExpression -> compareNumbers -> некорректный "operator" для "left" и "right"',
           { left, right, operator: this.operation },
         );

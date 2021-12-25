@@ -176,16 +176,12 @@ const App: FC = () => {
 
     const parameters = {
       period: 2,
-      points: -1.5,
-      pointType: 100.0,
-      feedType: 100.0,
-      periodType: 106.0,
     };
 
-    result = NameStringParser.Parse(str).format(formatterContext, parameters);
+    result = NameStringParser.Parse(str).format('ru', formatterContext, parameters);
   }
   catch (err) {
-    console.log('err', err);
+    // console.error('err', err.stack);
     return (
       <div>ЧТО_ТО СЛОМАЛОСЬ</div>
     )

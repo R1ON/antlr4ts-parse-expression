@@ -14,12 +14,12 @@ export class ArrayExpression extends NameStringExpression {
   }
 
   public evaluateString: EvaluateStringExp = () => {
-    throw ANTLRError.getErrorMessage('ArrayExpression -> нельяза преобразовать массив к строке');
+    throw new ANTLRError('ArrayExpression -> нельяза преобразовать массив к строке');
   };
 
-  public evaluateValue: EvaluateValueExp = (formatterContext, parameters) => {
+  public evaluateValue: EvaluateValueExp = (language, formatterContext, parameters) => {
     return this.values.map((value) => (
-      value.evaluateValue(formatterContext, parameters)
+      value.evaluateValue(language, formatterContext, parameters)
     )).flat();
   };
 }

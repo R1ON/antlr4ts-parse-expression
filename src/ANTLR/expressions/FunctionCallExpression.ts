@@ -15,20 +15,20 @@ export class FunctionCallExpression extends NameStringExpression {
     this.params = params;
   }
 
-  public evaluateString: EvaluateStringExp = (formatterContext, parameters) => {
-    const func = formatterContext.tryGetFunction(this.functionName);
+  public evaluateString: EvaluateStringExp = (language, formatterContext, parameters) => {
+    const func = formatterContext.tryGetFunction(this.functionName, language);
 
     if (!func) {
-      throw ANTLRError.getErrorMessage(
+      throw new ANTLRError(
         'FunctionCallExpression -> функция не найдена',
         { functionName: this.functionName },
       );
     }
 
-    return func(this.params, formatterContext, parameters);
+    return func(this.params, language, formatterContext, parameters);
   };
 
-  public evaluateValue: EvaluateValueExp = (formatterContext, parameters) => {
-    return this.evaluateString(formatterContext, parameters);
+  public evaluateValue: EvaluateValueExp = (language, formatterContext, parameters) => {
+    return this.evaluateString(language, formatterContext, parameters);
   };
 }

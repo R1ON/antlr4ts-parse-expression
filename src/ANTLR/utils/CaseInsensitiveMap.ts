@@ -1,14 +1,14 @@
 export class CaseInsensitiveMap<T, U> extends Map<T, U> {
   set(key: T, value: U): this {
     if (typeof key === 'string') {
-      key = key.toLowerCase() as any as T;
+      key = key.toLowerCase() as unknown as T;
     }
     return super.set(key, value);
   }
 
   get(key: T): U | undefined {
     if (typeof key === 'string') {
-      key = key.toLowerCase() as any as T;
+      key = key.toLowerCase() as unknown as T;
     }
 
     return super.get(key);
@@ -16,7 +16,7 @@ export class CaseInsensitiveMap<T, U> extends Map<T, U> {
 
   has(key: T): boolean {
     if (typeof key === 'string') {
-      key = key.toLowerCase() as any as T;
+      key = key.toLowerCase() as unknown as T;
     }
 
     return super.has(key);

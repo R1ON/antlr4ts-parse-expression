@@ -3,7 +3,7 @@ import { NameString } from './utils/NameString';
 import { ANTLRError } from './utils/Error';
 
 export class NameStringParser {
-  public static Parse(nameString: string) {
+  public static Parse(nameString: string): NameString {
     let startPosition           = 0;
     let position                = 0;
     let spacesCount             = 0;
@@ -40,7 +40,7 @@ export class NameStringParser {
 
       if (char === '}') {
         if (!inExpression) {
-          throw ANTLRError.getErrorMessage(
+          throw new ANTLRError(
             'NameStringParser -> была найден символ "}", но не найден "{"',
             { position },
           );
@@ -54,7 +54,7 @@ export class NameStringParser {
     }
 
     if (inExpression) {
-      throw ANTLRError.getErrorMessage(
+      throw new ANTLRError(
         'NameStringParser -> выражение не закрыто',
         { expressionStartPosition },
       );
@@ -63,7 +63,7 @@ export class NameStringParser {
     if (stack.length > 0) {
       const errorPosition = currentContext.startPosition;
 
-      throw ANTLRError.getErrorMessage(
+      throw new ANTLRError(
         'NameStringParser -> выражение не закрыто',
         { errorPosition },
       );
@@ -114,16 +114,21 @@ export class NameStringParser {
 
     function exitParens() {
       if (stack.length === 0) {
-        throw ANTLRError.getErrorMessage('NameStringParser -> не найден символ "("');
+        throw new ANTLRError('NameStringParser -> не найден символ "("');
       }
 
       position++;
       startPosition = position;
-      spacesCount   = 0;
+      spacesCount = 0;
 
       const parensString = new ParensString(currentContext.spaces, currentContext.nameStrings);
 
-      currentContext = stack.pop();
+      const context = stack.pop();
+
+      if (context !== undefined) {
+        currentContext = context;
+      }
+
       currentContext.nameStrings.push(parensString);
     }
 
@@ -154,6 +159,6 @@ export class NameStringParser {
 
 class ParensContext {
   public nameStrings: StringChunk[] = [];
-  public startPosition: number;
-  public spaces: string | null = null;
+  public startPosition = 0;
+  public spaces = '';
 }

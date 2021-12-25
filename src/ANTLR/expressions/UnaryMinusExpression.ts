@@ -13,33 +13,35 @@ export class UnaryMinusExpression extends NameStringExpression {
     this.innerExpression = innerExpression;
   }
 
-  public evaluateString: EvaluateStringExp = (formatterContext, parameters) => {
-    return this.evaluateValue(formatterContext, parameters).toString();
+  public evaluateString: EvaluateStringExp = (language, formatterContext, parameters) => {
+    const value = this.evaluateValue(language, formatterContext, parameters);
+
+    return this.convertEvaluatedValueToString(value);
   };
 
-  public evaluateValue: EvaluateValueExp = (formatterContext, parameters) => {
-    const argumentValue = this.innerExpression.evaluateValue(formatterContext, parameters);
+  public evaluateValue: EvaluateValueExp = (language, formatterContext, parameters) => {
+    const argValue = this.innerExpression.evaluateValue(language, formatterContext, parameters);
 
-    if (typeof argumentValue === 'number') {
-      return -argumentValue;
+    if (typeof argValue === 'number') {
+      return -argValue;
     }
 
-    if (typeof argumentValue === 'string') {
-      const floatArgument = parseFloat(argumentValue);
+    if (typeof argValue === 'string') {
+      const floatArgument = parseFloat(argValue);
 
       if (Number.isNaN(floatArgument)) {
-        throw ANTLRError.getErrorMessage(
-          'UnaryMinusExpression -> не получилось конвертировать "argumentValue" в число.',
-          { argumentValue, argumentValueTypeof: typeof argumentValue },
+        throw new ANTLRError(
+          'UnaryMinusExpression -> не получилось конвертировать "argValue" в число.',
+          { argValue, argValueTypeof: typeof argValue },
         );
       }
 
       return -floatArgument;
     }
 
-    throw ANTLRError.getErrorMessage(
-      'UnaryMinusExpression -> "argumentValue" должен быть строкой или числом',
-      { argumentValue, argumentValueTypeof: typeof argumentValue },
+    throw new ANTLRError(
+      'UnaryMinusExpression -> "argValue" должен быть строкой или числом',
+      { argValue, argValueTypeof: typeof argValue },
     );
   };
 }

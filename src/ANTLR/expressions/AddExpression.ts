@@ -15,13 +15,15 @@ export class AddExpression extends NameStringExpression {
     this.right = right;
   }
 
-  public evaluateString: EvaluateStringExp = (formatterContext, parameters) => {
-    return this.evaluateValue(formatterContext, parameters).toString();
+  public evaluateString: EvaluateStringExp = (language, formatterContext, parameters) => {
+    const value = this.evaluateValue(language, formatterContext, parameters);
+
+    return this.convertEvaluatedValueToString(value);
   };
 
-  public evaluateValue: EvaluateValueExp = (formatterContext, parameters) => {
-    const left = this.left.evaluateValue(formatterContext, parameters);
-    const right = this.right.evaluateValue(formatterContext, parameters);
+  public evaluateValue: EvaluateValueExp = (language, formatterContext, parameters) => {
+    const left = this.left.evaluateValue(language, formatterContext, parameters);
+    const right = this.right.evaluateValue(language, formatterContext, parameters);
 
     if (typeof left === 'number' && typeof right === 'number') {
       return left + right;
@@ -35,7 +37,7 @@ export class AddExpression extends NameStringExpression {
       return left.toString() + right;
     }
 
-    throw ANTLRError.getErrorMessage(
+    throw new ANTLRError(
       'AddExpression -> "right" или "left" не являются числом или строкой',
       { left, right },
     );

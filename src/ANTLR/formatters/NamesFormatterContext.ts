@@ -1,5 +1,12 @@
+import { I18Lang } from '../../locales';
+import {
+  CommonFunctionsName,
+  RussianFunctionsName,
+  EnglishFunctionsName,
+  CommonFunction,
+} from '../types';
+
 import { Entity } from './Entity';
-import { CommonFunctionsName, CommonFunction } from '../utils/commonFunctions';
 import { CaseInsensitiveMap } from '../utils/CaseInsensitiveMap';
 
 // ---
@@ -8,19 +15,28 @@ type TeamId = string;
 export type Entities = Record<TeamId, Record<string, unknown>>;
 type EntitiesByKey<Key extends string> = Record<Key, Entities>;
 
-type Functions = Record<CommonFunctionsName, CommonFunction>;
+type CommonFunctions = Record<CommonFunctionsName, CommonFunction>;
+
+// ---
+
+type LocalizedRussianFunctions = Record<RussianFunctionsName, CommonFunction>;
+type LocalizedEnglishFunctions = Record<EnglishFunctionsName, CommonFunction>;
+type LocalizedFunctions = Partial<{
+  ru: LocalizedRussianFunctions;
+  en: LocalizedEnglishFunctions;
+}>;
 
 // ---
 
 export class NamesFormatterContext {
   public entitiesById = new CaseInsensitiveMap<string, CaseInsensitiveMap<TeamId, Entity>>();
-  private _functions: Functions;
-  // private _localizedFunctions = [];
+  private _functions: CommonFunctions | null = null;
+  private _localizedFunctions: LocalizedFunctions | null = null;
 
-  public addEntities<EntityKey extends string>(entities: EntitiesByKey<EntityKey>) {
+  public addEntities<EntityKey extends string>(entities: EntitiesByKey<EntityKey>): void {
     for (const name in entities) {
       const entitiesById = this.entitiesById.has(name)
-        ? this.entitiesById.get(name)
+        ? (this.entitiesById.get(name) as CaseInsensitiveMap<TeamId, Entity>)
         : new CaseInsensitiveMap<TeamId, Entity>();
 
       const newEntitiesById = entities[name];
@@ -35,28 +51,53 @@ export class NamesFormatterContext {
     }
   }
 
-  public addCommonFunctions(functions: Functions) {
+  public addCommonFunctions(functions: CommonFunctions): void {
     this._functions = functions;
   }
 
-  public tryGetFunction(name: CommonFunctionsName | string) {
-    if (!this._functions) {
+  public addLocalizedFunctions(functions: LocalizedFunctions): void {
+    if (this._localizedFunctions === null) {
+      this._localizedFunctions = functions;
+      return;
+    }
+
+    this._localizedFunctions = { ...this._localizedFunctions, ...functions };
+  }
+
+  public tryGetFunction(
+    name: CommonFunctionsName | string,
+    language: I18Lang,
+  ): CommonFunction | null {
+    if (this.isCommonFunction(name)) {
+      if (this._functions === null) {
+        return null;
+      }
+
+      return this._functions[name];
+    }
+
+    if (this._localizedFunctions === null || !this.isSupportedLang(language)) {
       return null;
     }
 
-    return name in this._functions
-      ? this._functions[name]
-      : null;
+    const functionsByLang = this._localizedFunctions[language];
+
+    if (functionsByLang && name in functionsByLang) {
+      return functionsByLang[name as keyof typeof functionsByLang];
+    }
+
+    return null;
   }
 
-  //  internal bool TryGetFunction(string name,
-  //                                      string language,
-  //                                      [MaybeNullWhen(false)] out NameFunction function)
-  //         {
-  //             if (_functions.TryGetValue(name, out function))
-  //                 return true;
-  //
-  //             return _localizedFunctions.TryGetValue(language, out var functions)
-  //                    && functions.TryGetValue(name, out function);
-  //         }
+  private isCommonFunction(name: CommonFunctionsName | string): name is CommonFunctionsName {
+    if (this._functions === null) {
+      return false;
+    }
+
+    return name in this._functions;
+  }
+
+  private isSupportedLang(language: I18Lang): language is 'ru' | 'en' {
+    return this._localizedFunctions !== null && language in this._localizedFunctions;
+  }
 }

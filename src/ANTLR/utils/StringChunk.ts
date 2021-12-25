@@ -4,10 +4,11 @@ import { FunctionWithContext } from '../types';
 
 import { NameStringExpressionVisitor } from './Visitor';
 
-import { NameStringExpressionGrammarLexer } from '../src/NameStringExpressionGrammarLexer';
-import { NameStringExpressionGrammarParser } from '../src/NameStringExpressionGrammarParser';
+import { NameStringExpressionGrammarLexer } from '../bin/NameStringExpressionGrammarLexer';
+import { NameStringExpressionGrammarParser } from '../bin/NameStringExpressionGrammarParser';
 
 import { NameStringExpression } from '../expressions/NameStringExpression';
+import { ANTLRError, ANTLRErrorListener } from './Error';
 
 // ---
 
@@ -20,8 +21,6 @@ interface NameStringExpressionProps {
 // ---
 
 export class StringChunk implements NameStringExpressionProps {
-  constructor() {}
-
   public writeTo: WriteTo = () => {
     return '';
   };
@@ -49,24 +48,31 @@ export class ExpressionString extends StringChunk {
     super();
 
     this.expression = expression;
+    const errorListener = new ANTLRErrorListener();
 
     const charStream = CharStreams.fromString(expression);
     const lexer = new NameStringExpressionGrammarLexer(charStream);
+    lexer.removeErrorListeners();
+    lexer.addErrorListener(errorListener);
+
     const token = new CommonTokenStream(lexer);
     const parser = new NameStringExpressionGrammarParser(token);
+    parser.removeErrorListeners();
+    parser.addErrorListener(errorListener);
 
-    const tree = parser.expression();
+    const tree = parser.compilationUnit();
     const visitor = new NameStringExpressionVisitor();
 
     this.Expression = visitor.visit(tree);
   }
 
   public writeTo: WriteTo = (
+    language,
     formatterContext,
-    parameters
+    parameters,
   ) => {
     try {
-      const result = this.Expression.evaluateString(formatterContext, parameters);
+      const result = this.Expression.evaluateString(language, formatterContext, parameters);
 
       if (typeof result !== 'string') {
         console.warn(`
@@ -84,7 +90,13 @@ export class ExpressionString extends StringChunk {
       return result;
     }
     catch (err) {
-      console.error(err);
+      if (err instanceof ANTLRError) {
+        console.error(err.message, err.props);
+        console.error(err.stack);
+      }
+      else {
+        console.error('err', err);
+      }
     }
 
     return '';
@@ -101,19 +113,20 @@ export class ParensString extends StringChunk {
 
   constructor(leadingSpace: string, nameString: StringChunk[]) {
     super();
-    
+
     this.leadingSpace = leadingSpace;
     this.innerChunks = nameString;
   }
 
   public writeTo: WriteTo = (
+    language,
     formatterContext,
     parameters,
   ) => {
     let innerString = `${this.leadingSpace}(`;
-    
+
     for (const chunk of this.innerChunks) {
-      const result = chunk.writeTo(formatterContext, parameters);
+      const result = chunk.writeTo(language, formatterContext, parameters);
 
       if (chunk instanceof ExpressionString && result === '') {
         return '';
@@ -123,7 +136,7 @@ export class ParensString extends StringChunk {
     }
 
     innerString += ')';
-    
+
     return innerString;
   };
 }

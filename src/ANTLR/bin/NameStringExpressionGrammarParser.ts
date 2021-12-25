@@ -1,4 +1,9 @@
-// Generated from ./src/ANTLR/NameStringExpressionGrammar.g4 by ANTLR 4.9.0-SNAPSHOT
+// eslint-disable-next-line
+// @ts-nocheck
+// eslint-disable-next-line
+// @ts-ignore-file
+
+// Generated from ./src/lib/ANTLR/NameStringExpressionGrammar.g4 by ANTLR 4.9.0-SNAPSHOT
 
 
 import { ATN } from "antlr4ts/atn/ATN";

@@ -7,7 +7,6 @@ import { ANTLRError } from '../utils/Error';
 // ---
 
 
-
 export class EntityReferenceExpression extends NameStringExpression {
   public entityName: string;
   public keyArgument: NameStringExpression | null;
@@ -25,62 +24,74 @@ export class EntityReferenceExpression extends NameStringExpression {
     this.path = path;
   }
 
-  public evaluateString: EvaluateStringExp = (formatterContext, parameters) => {
+  public evaluateString: EvaluateStringExp = (language, formatterContext, parameters) => {
     let entity: Entity;
 
     if (this.keyArgument === null) {
-      throw ANTLRError.getErrorMessage(
+      // TODO: когда научится, нужно дописать тест. Тест уже подготовлен, нужно искать по ключу (EntityReferenceExpressionTestTODO)
+      throw new ANTLRError(
         'EntityReferenceExpression -> evaluateString еще не умеет работать с аргументами',
         { argument: this.keyArgument },
       );
     }
     else {
       if (!formatterContext.entitiesById.has(this.entityName)) {
-        throw ANTLRError.getErrorMessage(
+        throw new ANTLRError(
           `EntityReferenceExpression -> поле ${this.entityName} не найдено в контексте`,
           { formatterContext },
         );
       }
 
       const entities = formatterContext.entitiesById.get(this.entityName);
-      
-      const key = this.keyArgument.evaluateValue(formatterContext, parameters);
-      
+
+      if (!entities) {
+        throw new ANTLRError(
+          'EntityReferenceExpression -> "entities" должен быть Map',
+          { entities },
+        );
+      }
+
+      const key = this.keyArgument.evaluateValue(language, formatterContext, parameters);
+
       if (key === null) {
-        throw ANTLRError.getErrorMessage(
+        throw new ANTLRError(
           `EntityReferenceExpression -> для ${this.entityName} не найден "key"`,
           { key },
         );
       }
-      
-      let stringKey: string;
-      
-      switch (typeof key) {
-        case 'string':
-          stringKey = key; break;
-        case 'number':
-          stringKey = key.toString(); break;
-        default:
-          throw ANTLRError.getErrorMessage(
-           'EntityReferenceExpression -> "key" должен быть строкой или числом',
-            { key, keyType: typeof key },
-          );
+
+      const stringKey = this.convertEvaluatedValueToString(key);
+
+      if (stringKey === null) {
+        throw new ANTLRError(
+          'EntityReferenceExpression -> "key" должен быть строкой или числом',
+          { key, keyType: typeof key },
+        );
       }
 
       if (!entities.has(stringKey)) {
-        throw ANTLRError.getErrorMessage(
+        throw new ANTLRError(
           `EntityReferenceExpression -> "entity" по ключу ${stringKey} не найден`,
           { entities },
         );
       }
-      
-      entity = entities.get(stringKey);
+
+      entity = entities.get(stringKey) as Entity;
     }
-    
-    return entity.tryGetProperty(this.path);
+
+    const value = entity.tryGetProperty(this.path, language);
+
+    if (value === null) {
+      throw new ANTLRError(
+        'EntityReferenceExpression -> не получилось найти значение по пути "path" в объекте "entity"',
+        { path: this.path, entity },
+      );
+    }
+
+    return value;
   };
 
-  public evaluateValue: EvaluateValueExp = (formatterContext, parameters) => {
-    this.evaluateString(formatterContext, parameters);
+  public evaluateValue: EvaluateValueExp = (language, formatterContext, parameters) => {
+    return this.evaluateString(language, formatterContext, parameters);
   };
 }
